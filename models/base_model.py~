@@ -1,0 +1,10 @@
+#!/usr/bin/python3
+""" Modules for class """
+from datetime import datetime
+from uuid import uuid4
+
+
+class BaseModel:
+    """ Class BaseModel """
+    id = str(uuid4())
+    
