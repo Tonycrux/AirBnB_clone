@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 """ Main class for AirBNB Console """
 import cmd
+from models import storage
+from models.engine import file_storage
+from models.engine.file_storage import FileStorage
+from models.base_model import BaseModel
 
 class HBNBCommand(cmd.Cmd):
     """ Console that emulate AirBNB """
