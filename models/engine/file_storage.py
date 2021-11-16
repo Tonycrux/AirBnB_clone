@@ -1,54 +1,52 @@
 #!/usr/bin/python3
+'''
+File storage class
+'''
+
+from models.base_model import BaseModel
+from models.user import User
 import json
-import os
+from datetime import datetime
+from models.place import Place
+from models.city import City
+from models.state import State
+from models.review import Review
+from models.amenity import Amenity
 
+class FileStorage():
 
-class FileStorage:
-    """ Class FileStorage  """
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
-        """ Return all Objects """
+        '''returns the dictionary'''
         return FileStorage.__objects
 
     def new(self, obj):
-        """ Create New Object """
-        FileStorage.__objects["{}.{}".format(obj.__class__.__name__, obj.id)] = obj
-        
+        '''sets in __objects the obj with key <obj class name>.id'''
+        type(self).__objects[type(obj).__name__+'.'+obj.id] = obj
+
     def save(self):
-        """ Save File in JSON """
-        with open(FileStorage.__file_path, 'w') as file_json:
-            res = {}
-            for key, value in FileStorage.__objects.items():
-                res[key] = value.to_dict()
-            file_json.write(json.dumps(res))
+        '''Serializes __objects to the JSON file'''
+        new_dict = {}
+        for key, value in FileStorage.__objects.items():
+            new_dict[key] = value.to_dict()
+        with open(FileStorage.__file_path, "w",
+                  encoding='utf-8') as write_file:
+            json.dump(new_dict, write_file)
 
     def reload(self):
-        """ Reload File Json """
-        from ..base_model import BaseModel
-        from ..user import User
-        from ..state import State
-        from ..city import City
-        from ..amenity import Amenity
-        from ..place import Place
-        from ..review import Review
+        '''
+        deserializes the JSON file to __objects (only if the JSON file (__file_path) exists ; otherwise, do nothing.
+        If the file doesn’t exist, no exception should be raised)
+        '''
+        try:
+            with open(FileStorage.__file_path, "r",
+                      encoding='utf-8') as read_file:
+                type(self).__objects = json.load(read_file)
+            for key, value in type(self).__objects.items():
+                obj = eval(type(self).__objects[key]['__class__'])(**value)
+                type(self).__objects[key] = obj
 
-        if exists(self.__file_path):
-            with open(self.__file_path) as jsonfile:
-                decereal = json.load(jsonfile)
-            for keys in decereal.keys():
-                if decereal[keys]['__class__'] == "BaseModel":
-                    self.__objects[keys] = BaseModel(**decereal[keys])
-                elif decereal[keys]['__class__'] == "User":
-                    self.__objects[keys] = User(**decereal[keys])
-                elif decereal[keys]['__class__'] == "State":
-                    self.__objects[keys] = State(**decereal[keys])
-                elif decereal[keys]['__class__'] == "City":
-                    self.__objects[keys] = City(**decereal[keys])
-                elif decereal[keys]['__class__'] == "Amenity":
-                    self.__objects[keys] = Amenity(**decereal[keys])
-                elif decereal[keys]['__class__'] == "Place":
-                    self.__objects[keys] = Place(**decereal[keys])
-                elif decereal[keys]['__class__'] == "Review":
-                    self.__objects[keys] = Review(**decereal[keys])
+        except FileNotFoundError:
+            pass

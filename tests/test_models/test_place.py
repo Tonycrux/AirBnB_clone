@@ -1,82 +1,93 @@
 #!/usr/bin/python3
-"""Unittest for BaseModel"""
-import os
-import time
-import unittest
-from datetime import datetime
-from models import storage
+'''
+Contains all tests for the base_model class
+'''
+from models.base_model import BaseModel
 from models.place import Place
+import unittest
+import os
 
 
 class TestPlace(unittest.TestCase):
-    """test BaseModel"""
+    '''
+    Tests that the BaseModel works okay
+    '''
+    def setUp(self):
+        '''
+        Set up method
+        Renames the file_storage file to avoid iterfering with data
+        '''
+        if os.path.isfile("file.json"):
+            os.rename("file.json", "backup_file.json")
 
-    def test_init(self):
-        """test blank basemodel init"""
-        snapshot = datetime.now()
-        pm1 = Place()
-        snapshot2 = datetime.now()
+        self.model_1 = Place()
+        self.model_2 = Place()
 
-        self.assertIsInstance(pm1.id, str)
-        self.assertTrue(len(pm1.id) > 0)
-        self.assertTrue('Place.' + pm1.id in storage.all().keys())
+    def tearDown(self):
+        '''
+        Tear down method
+        Does clean up
+        '''
+        if os.path.isfile("file.json"):
+            os.remove("file.json")
+        if os.path.isfile("backup_file.json"):
+            os.rename("backup_file.json", "file.json")
 
-        self.assertIsInstance(pm1.created_at, datetime)
-        self.assertLess(pm1.created_at, snapshot2)
-        self.assertGreater(pm1.created_at, snapshot)
-        
-        self.assertIsInstance(pm1.updated_at, datetime)
-        self.assertLess(pm1.updated_at, snapshot2)
-        self.assertGreater(pm1.updated_at, snapshot)
-        
-        pm1.save()
-        self.assertIsInstance(pm1.updated_at, datetime)
-        self.assertGreater(pm1.updated_at, snapshot)
-        self.assertGreater(pm1.updated_at, snapshot2)
-        del pm1
-        
-    def test_init_dict(self):
-        """test dict basemodel init"""
-        test_dict = {'updated_at': datetime(1963, 11, 22, 12, 30, 00, 716921).isoformat('T')
-                     , 'id': 'z3854b62-93fa-fbbe-27de-630706f8313c', 'created_at': datetime(1963, 11, 22, 12, 30, 00, 716921).isoformat('T')}
-        pm2 = Place(**test_dict)
+        del self.model_1
+        del self.model_2
 
-        self.assertIsInstance(pm2.id, str)
-        self.assertTrue(len(pm2.id) > 0)
-        self.assertTrue(pm2.id == test_dict['id'])
-        
-        self.assertIsInstance(pm2.created_at, datetime)
-        self.assertTrue(pm2.created_at.isoformat('T') == test_dict['created_at'])
-        self.assertIsInstance(pm2.updated_at, datetime)
-        self.assertTrue(pm2.updated_at.isoformat('T') == test_dict['updated_at'])
-        pm2.save()
-        self.assertGreater(pm2.updated_at, pm2.created_at)
-        del pm2
+    def test_attributes_types(self):
+        '''
+        Test that all attributes are of the correct type
+        '''
+        self.assertIsInstance(self.model_1.name, str)
+        self.assertIsInstance(self.model_1.city_id, str)
+        self.assertIsInstance(self.model_1.user_id, str)
+        self.assertIsInstance(self.model_1.description, str)
+        self.assertIsInstance(self.model_1.number_rooms, int)
+        self.assertIsInstance(self.model_1.number_bathrooms, int)
+        self.assertIsInstance(self.model_1.max_guest, int)
+        self.assertIsInstance(self.model_1.price_by_night, int)
+        self.assertIsInstance(self.model_1.latitude, float)
+        self.assertIsInstance(self.model_1.longitude, float)
+        self.assertIsInstance(self.model_1.amenity_ids, list)
 
-    def test_attribute(self):
-        """asdad"""
-        pm3 = Place()
+    def test_attributes_exist(self):
+        '''
+        Test that class Place has the required attributes and methods
+        '''
+        self.assertTrue(hasattr(Place, 'city_id'))
+        self.assertTrue(hasattr(Place, 'user_id'))
+        self.assertTrue(hasattr(Place, 'name'))
+        self.assertTrue(hasattr(Place, 'description'))
+        self.assertTrue(hasattr(Place, 'number_rooms'))
+        self.assertTrue(hasattr(Place, 'number_bathrooms'))
+        self.assertTrue(hasattr(Place, 'max_guest'))
+        self.assertTrue(hasattr(Place, 'price_by_night'))
+        self.assertTrue(hasattr(Place, 'latitude'))
+        self.assertTrue(hasattr(Place, 'longitude'))
+        self.assertTrue(hasattr(Place, 'amenity_ids'))
 
-        self.assertTrue(hasattr(pm3, "city_id"))
-        self.assertTrue(hasattr(pm3, "user_id"))
-        self.assertTrue(hasattr(pm3, "name"))
-        self.assertTrue(hasattr(pm3, "description"))
-        self.assertTrue(hasattr(pm3, "number_rooms"))
-        self.assertTrue(hasattr(pm3, "number_bathrooms"))
-        self.assertTrue(hasattr(pm3, "max_guest"))
-        self.assertTrue(hasattr(pm3, "price_by_night"))
-        self.assertTrue(hasattr(pm3, "latitude"))
-        self.assertTrue(hasattr(pm3, "longitude"))
-        self.assertTrue(hasattr(pm3, "amenity_ids"))
+    def test_isinstance(self):
+        '''
+        Check that the created instance is an instance of the BaseModel class
+        '''
+        self.assertIsInstance(self.model_1, BaseModel)
 
-        self.assertIsInstance(pm3.city_id, str)
-        self.assertIsInstance(pm3.user_id, str)
-        self.assertIsInstance(pm3.name, str)
-        self.assertIsInstance(pm3.description, str)
-        self.assertIsInstance(pm3.number_rooms, int)
-        self.assertIsInstance(pm3.number_bathrooms, int)
-        self.assertIsInstance(pm3.max_guest, int)
-        self.assertIsInstance(pm3.price_by_night, int)
-        self.assertIsInstance(pm3.latitude, float)
-        self.assertIsInstance(pm3.longitude, float)
-        self.assertIsInstance(pm3.amenity_ids, list)
+    def test_is_subclass(self):
+        '''
+        Check whethe Place is a subclass of basemodel
+        '''
+        self.assertTrue(issubclass(self.model_1.__class__, BaseModel))
+
+    def test_inherited_attributes(self):
+        '''
+        Confirm that all the required attributes were imported from BaseModel
+        Also confirm that Place's attributes are present
+        '''
+        self.assertTrue('id' in self.model_1.__dict__)
+        self.assertTrue('created_at' in self.model_1.__dict__)
+        self.assertTrue('updated_at' in self.model_1.__dict__)
+
+if __name__ == "__main__":
+    unittest.main()
